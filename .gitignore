@@ -1,0 +1,12 @@
+# Rust build artifacts
+/target/
+
+# Local environment / editor stuff
+.env
+.env.*
+*.swp
+*.swo
+
+# OS/editor junk
+.DS_Store
+Thumbs.db

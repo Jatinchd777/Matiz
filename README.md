@@ -1,161 +1,482 @@
-# wallust - Generate colors from an image
-[//]: # (ANCHOR: badges)
+# Matiz
 
-[![crates-io](https://img.shields.io/crates/v/wallust?style=flat-square&color=red)](https://crates.io/crates/wallust)
-[![downloads](https://img.shields.io/crates/d/wallust?style=flat-square&color=yellow)](https://crates.io/crates/wallust)
-[![license](https://img.shields.io/crates/l/wallust?style=flat-square)](https://codeberg.org/explosion-mental/wallust/src/branch/main/LICENSE)
-[![dependency-status](https://deps.rs/repo/codeberg/explosion-mental/wallust/status.svg?style=flat-square)](https://deps.rs/repo/codeberg/explosion-mental/wallust)
-[![status-badge](https://ci.codeberg.org/api/badges/13317/status.svg)](https://ci.codeberg.org/repos/13317)
-[![CodeBerg](https://img.shields.io/badge/Hosted_at-Codeberg-%232185D0?style=flat-square&logo=CodeBerg)](https://codeberg.org/explosion-mental/wallust)
-[![MatrixChat](https://matrix.to/img/matrix-badge.svg)](https://matrix.to/#/#wal-lust:matrix.org)
+> Wallpaper-derived semantic colors for Linux.
 
-[//]: # (ANCHOR_END: badges)
-<br>
+Matiz is a wallpaper-driven color system based on Wallust v3.5.2, extended with semantic color generation using perceptual color transformations.
 
-![gif](https://explosion-mental.codeberg.page/img/other/wallust-2.6.gif "wallust gif")
-> sources: [adwaita](https://gitlab.gnome.org/GNOME/gnome-backgrounds/-/blob/main/backgrounds/adwaita-d.jpg) - [scenic view of mountains](https://www.pexels.com/photo/scenic-view-of-mountains-during-dawn-1261728) - [rms by marco novo](https://stallman.org/photos/rms/pages/2.html) - [pixels](https://gitlab.gnome.org/GNOME/gnome-backgrounds/-/blob/main/backgrounds/pixels-l.webp) - [linus talking](https://en.wikipedia.org/wiki/File:Linus_Torvalds_talking.jpeg)
+It preserves Wallust's existing palette workflow while adding a structured semantic color layer for desktop shells, applications, widgets, and other UI components.
 
-**If coming from v2, please check [v3 breaking changes](./docs/v3.md).**
+**Wallpaper provides the personality. Semantics provide the structure.**
 
-## Usage
+## What is Matiz?
+
+Traditional wallpaper theming is good at extracting colors, but applications often need more than a collection of palette indexes.
+
+A UI needs to know things like:
+
+- Which color is the primary action?
+- Which color belongs on top of it?
+- Which color should be used for containers?
+- Which colors represent surfaces?
+- Which color should be used for outlines?
+- Which color represents an error?
+
+Matiz adds those relationships while keeping the colors derived from the wallpaper.
+
+The result is a theme that can adapt to the wallpaper without forcing every wallpaper into the same visual appearance.
+
+## Philosophy
+
+Matiz is built around a simple idea:
+
+> **Keep the identity of the source colors, then give them meaning.**
+
+A colorful wallpaper can produce colorful semantic colors.
+
+A muted wallpaper can produce muted semantic colors.
+
+A mostly white or neutral wallpaper can naturally produce neutral colors.
+
+Matiz does not attempt to turn every wallpaper into the same predefined aesthetic.
+
+The wallpaper remains responsible for the character of the theme, while semantic roles determine how that character is used throughout the UI.
+
+## How it works
+
+```text
+Wallpaper
+    │
+    ▼
+Wallust palette extraction
+    │
+    ▼
+LAB palette
+    │
+    ▼
+Wallust palette color
+    │
+    ▼
+LAB → LCH
+    │
+    ▼
+Semantic transformations
+    │
+    ▼
+Semantic roles
+    │
+    ▼
+Shells / applications / UI
 ```
-wallust run my_wallpaper.png
+
+Wallust's palette generation and Matiz's semantic generation are separate layers.
+
+The traditional Wallust palette remains available for existing templates and terminal colors, while the semantic engine derives additional colors for structured UI theming.
+
+## Color generation
+
+The semantic engine uses LCH for its color transformations.
+
+LCH provides separate control over:
+
+- Lightness
+- Chroma
+- Hue
+
+This allows semantic roles to be derived from the extracted colors while maintaining relationships with the source color.
+
+For example, a primary color can retain its source hue while its semantic variants adjust lightness and chroma according to their intended role.
+
+The goal is not to replace the extracted palette.
+
+The goal is to derive a structured semantic system from it.
+
+## Semantic roles
+
+Matiz provides a set of semantic roles for applications and desktop shells.
+
+### Primary
+
+```text
+primary
+on_primary
+primary_container
+on_primary_container
 ```
-_use `wallust -h` for an overview and `wallust --help` for a more detailed explanation_
 
-## Docs
+### Secondary
 
-For ease of use you can check **detailed** docs with man pages (rather than `cmd -h`ing everytime):
-- `man wallust`, information about terminal colors and **template syntax**;
-- `man wallust.5`, config docs;
-- `man wallust-subcommand`, displays a man page for _subcommand_.
+```text
+secondary
+on_secondary
+secondary_container
+on_secondary_container
+```
 
-There is also a [**web page**](https://explosion-mental.codeberg.page/wallust) for documentation! It's based on plain markdown, so you could also read it locally at `docs/` directory.
+### Tertiary
 
-[//]: # (ANCHOR: feats)
+```text
+tertiary
+on_tertiary
+tertiary_container
+on_tertiary_container
+```
+
+### Error
+
+```text
+error
+on_error
+error_container
+on_error_container
+```
+
+### Background and surfaces
+
+```text
+background
+on_background
+
+surface
+on_surface
+
+surface_variant
+on_surface_variant
+
+surface_dim
+surface_bright
+
+surface_container_lowest
+surface_container_low
+surface_container
+surface_container_high
+surface_container_highest
+```
+
+### Additional roles
+
+```text
+surface_tint
+
+outline
+outline_variant
+
+inverse_surface
+inverse_on_surface
+inverse_primary
+
+scrim
+```
+
+### Fixed roles
+
+```text
+primary_fixed
+primary_fixed_dim
+on_primary_fixed
+on_primary_fixed_variant
+
+secondary_fixed
+secondary_fixed_dim
+on_secondary_fixed
+on_secondary_fixed_variant
+
+tertiary_fixed
+tertiary_fixed_dim
+on_tertiary_fixed
+on_tertiary_fixed_variant
+```
+
+These roles allow applications to consume colors according to their purpose rather than relying exclusively on arbitrary palette indexes.
+
+## Templates
+
+Semantic colors are available through the `semantic` template namespace.
+
+For example:
+
+```js
+const theme = {
+  primary: "{{ semantic.primary }}",
+  onPrimary: "{{ semantic.on_primary }}",
+
+  primaryContainer: "{{ semantic.primary_container }}",
+  onPrimaryContainer: "{{ semantic.on_primary_container }}",
+
+  secondary: "{{ semantic.secondary }}",
+  onSecondary: "{{ semantic.on_secondary }}",
+
+  tertiary: "{{ semantic.tertiary }}",
+  onTertiary: "{{ semantic.on_tertiary }}",
+
+  background: "{{ semantic.background }}",
+  onBackground: "{{ semantic.on_background }}",
+
+  surface: "{{ semantic.surface }}",
+  onSurface: "{{ semantic.on_surface }}",
+
+  outline: "{{ semantic.outline }}",
+  error: "{{ semantic.error }}",
+  onError: "{{ semantic.on_error }}",
+
+  color0: "{{ color0 }}",
+  color4: "{{ color4 }}",
+  color8: "{{ color8 }}",
+
+  foreground: "{{ foreground }}",
+};
+```
+
+This allows the same generated theme to be consumed by shells, applications, widgets, and other components.
+
+## Wallust palette
+
+Matiz keeps the traditional Wallust palette available.
+
+Existing palette variables such as:
+
+```text
+color0
+color1
+color2
+color3
+color4
+color5
+color6
+color7
+color8
+color9
+color10
+color11
+color12
+color13
+color14
+color15
+
+background
+foreground
+```
+
+can continue to be used alongside the semantic colors.
+
+This is intentional.
+
+Terminal applications and existing Wallust templates can continue to use the palette they expect, while newer UI components can use semantic roles.
+
+## Semantic colors and Material-style terminology
+
+Matiz uses semantic role names such as:
+
+```text
+primary
+secondary
+tertiary
+surface
+outline
+error
+```
+
+These names are also found in modern semantic UI color systems.
+
+However, Matiz is not a Material 3 implementation and does not use Matugen's color-generation pipeline.
+
+The semantic vocabulary provides structure; Matiz's color generation is based on its own transformations of Wallust-derived colors.
+
+## Desktop use
+
+Matiz can be used as the color layer for a Linux desktop.
+
+For example:
+
+```text
+                    Matiz
+                      │
+          ┌───────────┼───────────┐
+          │           │           │
+          ▼           ▼           ▼
+      Quickshell    GTK apps   Terminal
+          │           │           │
+          └───────────┼───────────┘
+                      ▼
+                   Desktop
+```
+
+A shell can use semantic roles for its UI while terminal applications continue consuming the traditional palette.
+
+This allows different parts of the desktop to share the same wallpaper-derived theme without requiring every component to independently interpret the extracted palette.
+
+## Example workflow
+
+```text
+                    Wallpaper
+                        │
+                        ▼
+                 Color extraction
+                        │
+             ┌──────────┴──────────┐
+             ▼                     ▼
+      Wallust palette            Matiz
+             │                     │
+             ▼                     ▼
+     Terminal colors        Semantic colors
+             │                     │
+             └──────────┬──────────┘
+                        ▼
+                     Desktop
+```
+
+The two outputs complement each other:
+
+- Traditional palette colors for existing Wallust workflows
+- Semantic colors for structured UI theming
+
 ## Features
-- Includes [man pages](man/) and [completions](completions/)!
-- Feature rich templating:
-    * You can use a [subset of _Jinja2_](https://github.com/mitsuhiko/minijinja/blob/main/COMPATIBILITY.md) (default).
-    * Alternatively, simply use the [_pywal_](https://github.com/dylanaraps/pywal/wiki/User-Template-Files#available-variables-and-syntax) syntax (requires selecting it on the config file).
-- Sets terminal colors on all (or the current, `-u`) active terminals:
-    * Windows: Adds a
-      [color scheme for the windows terminal](https://learn.microsoft.com/en-us/windows/terminal/customize-settings/color-schemes#creating-your-own-color-scheme)
-      by updating `settings.json` on Windows Terminal, to enable this scheme for the first time you will have to selected it manually
-    * *NIX: ASCII escape sequences:
-        - `/dev/pts/` on Linux
-        - [`ps` to search active terminals](https://github.com/dylanaraps/pywal/pull/510) on OpenBSD
-    * MacOS: iTerm2 sequences, `/dev/ttys00` on MacOS
-- Cache scheme palettes, overwritten by `-w`:
-    * Linux: `$XDG_CACHE_HOME` or `$HOME/.cache`
-    * MacOs: `$HOME/Library/Caches`
-    * Windows: `{FOLDERID_LocalAppData}`
-- Read pywal/terminal-sexy colorschemes with `wallust cs`.
-- Built-in [themes](https://codeberg.org/explosion-mental/wallust-themes) with ` wallust theme` (compile time feature).
-- Configuration file at [`wallust.toml`](./wallust.toml) (but wallust can work without one!):
-    * wallust checks for `~/.config/wallust/wallust.toml` for the config file, if not found it will use default implementations.
-    * Configuration variables are avaliable as cli flags.
-	* Configurable methods for backends, colorspaces, palettes and threshold.
-    * OS dependant path:
-        - Linux: `$XDG_CONFIG_HOME` or `$HOME/.config`
-        - MacOs: `$HOME/Library/Application Support`
-        - Windows: `{FOLDERID_RoamingAppData}`
 
-| Methods    | Description |
-|------------|-------------|
-| Backends   | How to extract the colors from the image. (e.g [pywal uses convert](https://github.com/dylanaraps/pywal/blob/236aa48e741ff8d65c4c3826db2813bf2ee6f352/pywal/backends/wal.py#L14)) |
-| ColorSpace | Get the most prominent color, and sort them according to the `Palette`, configurable by a _threshold_ |
-| Palette    | Makes a scheme palette with the gathered colors, (e.g. sets light background) |
+- Wallpaper-derived semantic colors
+- LCH-based semantic transformations
+- Primary, secondary, and tertiary roles
+- Container roles
+- Background and surface roles
+- Error roles
+- Inverse roles
+- Fixed roles
+- Contrast handling
+- Traditional Wallust palette preservation
+- Template support
+- Light and dark color schemes
+- Rust implementation
 
-[//]: # (ANCHOR_END: feats)
+## Installation
 
-# Installation
+### Build from source
 
-You can see if your distro has **wallust** in their repos by the following
-chart. For detail information you can check some [distro installation instruction](./docs/installation/distro.md)
-that the maintainers have left.
+Clone the repository:
 
-[//]: # (ANCHOR: repology)
-
-<a href="https://repology.org/project/wallust/versions">
-  <img align="right" width="192" src="https://repology.org/badge/vertical-allrepos/wallust.svg">
-</a>
-
-[//]: # (ANCHOR_END: repology)
-
-[//]: # (ANCHOR: installation-src)
-
-## With cargo
-```
-cargo install wallust
-```
-This will use the lastest (non pre-release) version.
-
-## With git
-Simply `git clone https://codeberg.org/explosion-mental/wallust`.
-
-Recommended way is to use the `Makefile`, since this will install man pages and completions.
-1. Edit `Makefile` to meet your local setup (should be fine as is for most linux distros).
-2. Build it with `make`
-3. Install wallust (if necessary as root): `make install`
-
-Optionally, installing **only** the binary can be done with the following,
-which moves the binary into your `$CARGO_HOME/bin`:
-```
-cargo install --path .
+```bash
+git clone https://github.com/Jatinchd777/wallust.git
+cd wallust
 ```
 
-or build it and copy the binary to one folder present in your `$PATH` like
-`/usr/local/bin`
-```
+Build the project:
+
+```bash
 cargo build --release
-cp -f ./target/release/wallust /usr/local/bin
 ```
 
-[//]: # (ANCHOR_END: installation-src)
+The release binary will be generated under:
 
-# Background
-I've started this tool mainly for _speed_ reasons given that I use a
-[keybinding](https://codeberg.org/explosion-mental/demwm/src/commit/cd43bd6c16a90e32dc1c22ec499d9aaff497f04a/config.h#L346)
-that [runs pywal](https://codeberg.org/explosion-mental/demwm/src/commit/cd43bd6c16a90e32dc1c22ec499d9aaff497f04a/demwm_random_wall#L19)
-with a random wallpaper image, this resulted in a noticeable delay in between,
-which was really annoying as I changed my wallpaper.
+```text
+target/release/
+```
 
-Now I know that pywal uses image magick `convert` to gather the colors, which
-caused the _slowness_ in pywal, since `convert` takes some time by itself to
-gather the colors.
+You can then install the binary using your preferred method.
 
-Wallust can also use `convert` with the `wal` backend, but it's even more
-powerful since it brings up integrated native methods (no need for external
-commands, like `convert`, but are nice if you have it), and even much more
-sofisticated algorithms like `kmeans` or the SIMD backend `fast_resize`. This
-made the need to let the user decide what fit best, and not hardcode one way of
-reading the image.
+### Requirements
 
-While the goal was focused on speed, the use case move on to upgrade
-functionality that both wallust and the _archived_ python tool shared.
+A working Rust toolchain is required to build Matiz from source.
 
-I use rust given the great wide library (crates) that it offered and it's
-native capabilities. I also tried [rewriting pywal in C](https://github.com/explosion-mental/wast)
-after watching a tsoding video where he implmements a histogram in C for
-manipulating an image. That was the push I needed to start this journey on this
-rusty color theoryish codebase.
+## Configuration
 
+Matiz currently inherits the configuration structure from the Wallust codebase.
 
-# Related
-- [wallust-themes - built in wallust colorschemes](https://codeberg.org/explosion-mental/wallust-themes)
-- [wallust-templates - some templates for known programs](https://codeberg.org/explosion-mental/wallust-templates)
-- [pywal - 🎨Generate and change color-schemes on the fly](https://github.com/dylanaraps/pywal)
-- [pywal16 - 16 colors fork of pywal](https://github.com/eylles/pywal16)
-- [wpgtk - 🎴a colorscheme, wallpaper and template manager for *nix](https://github.com/deviantfero/wpgtk)
-- [wal-theme-picker - pick the best theme for the image (_rather than generating one_)](https://github.com/drybalka/wal-theme-picker)
-- [pigmnts - 🎨Color palette generator from an image using WebAssesmbly and Rust](https://github.com/blenderskool/pigmnts)
-- [Chameleon - 🦎Theme your linux system to match any image](https://github.com/GideonWolfe/Chameleon)
-- [lule_bash - Genretare all 255 colors from wallpapers](https://github.com/warpwm/lule_bash)
-- [lule - `lule_bash` rewriten for efficiency](https://github.com/warpwm/lule)
-- [using vscode-wal-theme with `wallust`](https://github.com/dlasagno/vscode-wal-theme/issues/23)
-- [base16 - Framework for Tomorrow styled themes](https://github.com/chriskempson/base16)
-- [flavours -  🎨💧An easy to use base16 scheme manager that integrates with any workflow](https://github.com/Misterio77/flavours)
-- [oxidec - Eye-candy manager written in Rust](https://github.com/mrtnvgr/oxidec)
-- [raventhemer - A theme manager and switcher for desktop linux](https://git.sr.ht/~nicohman/raven)
-- [rose-pine _Issue #2_ - Ideas with using the whole 15 color palette](https://github.com/rose-pine/xresources/issues/2)
+Configuration and template paths are being transitioned from the original Wallust naming toward Matiz-specific paths.
+
+During this transition, compatibility with the existing Wallust workflow is a priority.
+
+## Compatibility
+
+Matiz is based on Wallust v3.5.2.
+
+The existing Wallust palette and template workflow is preserved while semantic colors are added as an additional capability.
+
+The goal is for existing configurations and templates to continue working without requiring users to immediately rewrite their entire theming setup.
+
+Matiz-specific configuration paths and CLI naming may change as the project moves toward a standalone identity.
+
+## Development
+
+Clone the repository and enter the project directory:
+
+```bash
+git clone https://github.com/Jatinchd777/wallust.git
+cd wallust
+```
+
+Check the project:
+
+```bash
+cargo check
+```
+
+Build a release version:
+
+```bash
+cargo build --release
+```
+
+Run tests:
+
+```bash
+cargo test
+```
+
+## Roadmap
+
+- [x] Wallpaper-derived palette extraction
+- [x] Semantic color generation
+- [x] LCH-based semantic transformations
+- [x] Primary roles
+- [x] Secondary roles
+- [x] Tertiary roles
+- [x] Surface roles
+- [x] Error roles
+- [x] Inverse roles
+- [x] Fixed roles
+- [x] Contrast handling
+- [x] Preserve traditional Wallust palette variables
+- [ ] Complete Matiz-specific naming
+- [ ] Finalize configuration path migration
+- [ ] Finalize CLI naming
+- [ ] Improve documentation
+- [ ] Expand template examples
+- [ ] Expand testing across different wallpapers
+- [ ] Additional packaging
+
+## Contributing
+
+Contributions, testing, bug reports, and ideas are welcome.
+
+When reporting a problem with semantic colors, useful information includes:
+
+- The wallpaper used
+- The generated colors
+- The configuration
+- The affected semantic roles
+- Screenshots showing the issue
+
+For development, please use the existing Rust development workflow.
+
+## Credits
+
+Matiz is based on Wallust v3.5.2.
+
+The original Wallust project can be found at:
+
+https://codeberg.org/explosion-mental/wallust
+
+Matiz retains and extends code from the upstream project. Please see the repository's license and attribution information for the applicable terms.
+
+## License
+
+Matiz is distributed under the MIT License, subject to the applicable copyright and license notices inherited from the upstream Wallust codebase.
+
+See [LICENSE](LICENSE) for the full license text.
+
+---
+
+<p align="center">
+  <strong>Wallpaper → Palette → Semantics → UI</strong>
+</p>
+
+<p align="center">
+  Let the wallpaper keep its character.
+</p>
